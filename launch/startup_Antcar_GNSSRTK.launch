@@ -1,0 +1,10 @@
+<launch>
+
+<!-- <node pkg="gnss_rtk" type="navpvt_pub.py" name="rtk_node" output="log" respawn="true"/> -->
+
+<!-- Launch the image_pub.py node from antcar_control package -->
+<node pkg="antcar_control" type="image_pub.py" name="image_pub_node" output="log" respawn="true" />  
+<node pkg="antcar_control" type="controller_vel2.py" name="control_vel_node" output="log" respawn="true"/>
+<node pkg="antcar_control" type="xbox_pub.py" name="xbox_publisher_node" output="log" respawn="true"/>
+
+</launch>
