@@ -10,19 +10,14 @@ if not capture.isEventStreamAvailable():
     raise RuntimeError("Input camera does not provide an event stream.")
 
 # Initialize an accumulator with some resolution
-accumulator = dv.Accumulator(capture.getEventResolution())
+visualizer = dv.visualization.EventVisualizer(capture.getEventResolution())
 
-# Apply configuration, these values can be modified to taste
-accumulator.setMinPotential(0.0)
-accumulator.setMaxPotential(1.0)
-accumulator.setNeutralPotential(0.5)
-accumulator.setEventContribution(0.15)
-accumulator.setDecayFunction(dv.Accumulator.Decay.EXPONENTIAL)
-accumulator.setDecayParam(1e+6)#1e+6
-accumulator.setIgnorePolarity(False)
-accumulator.setSynchronousDecay(False)
+# Apply color scheme configuration, these values can be modified to taste
+visualizer.setBackgroundColor(dv.visualization.colors.white())
+visualizer.setPositiveColor(dv.visualization.colors.iniBlue())
+visualizer.setNegativeColor(dv.visualization.colors.darkGrey())
 
-# Initialize preview window
+# Initialize a preview window
 cv.namedWindow("Preview", cv.WINDOW_NORMAL)
 
 # Initialize a slicer
@@ -31,16 +26,15 @@ slicer = dv.EventStreamSlicer()
 
 # Declare the callback method for slicer
 def slicing_callback(events: dv.EventStore):
-    # Pass events into the accumulator and generate a preview frame
-    accumulator.accept(events)
-    frame = accumulator.generateFrame()
+    # Generate a preview frame
+    frame = visualizer.generateImage(events)
 
     # Show the accumulated image
-    cv.imshow("Preview", frame.image)
+    cv.imshow("Preview", frame)
     cv.waitKey(2)
 
 
-# Register a callback every 33 milliseconds
+# Register callback to be performed every 33 milliseconds
 slicer.doEveryTimeInterval(timedelta(milliseconds=33), slicing_callback)
 
 # Run the event processing while the camera is connected
