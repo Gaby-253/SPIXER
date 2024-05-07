@@ -4,23 +4,21 @@ import rospy
 from dvs_msgs.msg import EventArray
 import cv2
 import numpy as np
-import zlib
-import pickle
 
-def event_callback(received_data):
-    list_of_events = pickle.loads(zlib.decompress(received_data))
+
+def event_callback(event_array):
     # Create an empty image
     image = 255 * np.ones((500, 500, 3), dtype=np.uint8)
 
     # Draw events on the image
-    for event in list_of_events:
-        if event[2]:  # Positive event
+    for event in event_array.events:
+        if event.polarity:  # Positive event
             color = (255, 0, 0)  # Blue
         else:  # Negative event
             color = (0, 0, 255)  # Red
 
         # Draw a circle at the event location
-        cv2.circle(image, (event[0], event[1]), 1, color, -1)
+        cv2.circle(image, (event.x, event.y), 1, color, -1)
 
     # Display the image
     cv2.imshow("Event Stream", image)
