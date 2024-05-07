@@ -23,17 +23,19 @@ event_publisher = rospy.Publisher('/event_stream', EventArray, queue_size=1)
 
 # Initialize message header
 header = Header()
-
+i=0
 while capture.isRunning():
     events = capture.getNextEventBatch()
-    if events is not None:
-        event_array_msg = EventArray(header=header, events=[])
-        for event in events:
-            ros_event = Event(
-                x=int(event.x()),
-                y=int(event.y()),
-                polarity=bool(event.polarity()),
-                ts=rospy.Time.from_sec(event.timestamp() / 1e6)  # Convert timestamp to ROS Time
-            )
-            event_array_msg.events.append(ros_event)
-        event_publisher.publish(event_array_msg)
+    i=i+1
+    if i%40 == 0:
+        if events is not None:
+            event_array_msg = EventArray(header=header, events=[])
+            for event in events:
+                ros_event = Event(
+                    x=int(event.x()),
+                    y=int(event.y()),
+                    polarity=bool(event.polarity()),
+                    ts=rospy.Time.from_sec(event.timestamp() / 1e6)  # Convert timestamp to ROS Time
+                )
+                event_array_msg.events.append(ros_event)
+            event_publisher.publish(event_array_msg)
