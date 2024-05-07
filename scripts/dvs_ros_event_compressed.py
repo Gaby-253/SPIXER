@@ -25,17 +25,19 @@ event_publisher = rospy.Publisher('/event_stream', EventArray, queue_size=1)
 
 # Initialize message header
 header = Header()
+i=0
 
 while capture.isRunning():
     events = capture.getNextEventBatch()
     list_of_events = []
-
-    if events is not None:
-        for event in events:
-            list_of_events.append([int(event.x()), int(event.y()), bool(event.polarity()), rospy.Time.from_sec(event.timestamp() / 1e6)])
-        dumped_events = pickle.dumps(list_of_events)
-        compressed_events = zlib.compress(dumped_events)
-        event_publisher.publish(compressed_events)
+    i=i+1
+    if i%4 >= 3:
+        if events is not None:
+            for event in events:
+                list_of_events.append([int(event.x()), int(event.y()), bool(event.polarity()), rospy.Time.from_sec(event.timestamp() / 1e6)])
+            dumped_events = pickle.dumps(list_of_events)
+            compressed_events = zlib.compress(dumped_events)
+            event_publisher.publish(compressed_events)
 
 
 # # receive Events
