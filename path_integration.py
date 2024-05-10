@@ -238,7 +238,26 @@ class PI:
         self.model.load(num_recording_timesteps=10000)
 
 
+
+
     def move(self, azimuth, speedl, speedr, generator_cur=0.3):
+        """
+        Function to be called at every timestep of the robot
+        Integrate the distance traveled during one timestep in the PI model,
+        the activity of the left and right motor neurons is returned. The
+        preferred direction of the model can be inferred by computing the difference
+        between the left and right motor neurons number of spikes.
+
+        azimuth:
+        speedl: linear speed measured by the left TN neuron
+        speedr: linear speed measured by the right TN neuron (orthogonal to the left one)
+
+        Generate one second of GeNN simulation (which is not 1 second in real time world, probably much less)
+        The simulation worked with generator_cur=0.3
+
+        Returns the activity of the left and right motor neurons (number of spikes)
+        recorded during a full second of GeNN simulation (which is not 1 second in real time world, probably much less)
+        """
 
         self.TL_input.vars["magnitude"].values = np.cos(self.TL_pref_azimuth - np.radians(azimuth))
         self.TL_input.vars["magnitude"].push_to_device()
@@ -248,6 +267,13 @@ class PI:
         self.Generator_input.vars["magnitude"].push_to_device()
         for step in range(10000):
             self.model.step_time()
+
+        spike_times, spike_ids = self.motor.spike_recording_data[0]
+        n_left = (np.array(spike_ids) == 0).sum()
+        n_right = (np.array(spike_ids) == 1).sum()
+
+        # Number of spikes on the left / right motor neurons
+        return (n_left, n_right)
 
     def display_raster(self):
         neurons = [self.TN2, self.TL, self.TB1, self.CPU4, self.CPU1a, self.CPU1b, self.motor, self.Generator]
